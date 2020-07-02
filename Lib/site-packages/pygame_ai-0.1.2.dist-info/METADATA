@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: pygame-ai
+Version: 0.1.2
+Summary: Videogame AI package for PyGame
+Home-page: https://github.com/nek2712/pygame-ai
+Author: Nek
+Author-email: nek2712@gmail.com
+License: GLGPL v2.1
+Keywords: pygame ai steering
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Software Development :: Libraries :: pygame
+Requires-Dist: pygame (<2)
+
+Implements a set of common AI techniques used in videogame development
+
+
