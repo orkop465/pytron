@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="30a9d116-8f18-406b-a733-a82f6e30aa6f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pytron.py" beforeDir="false" afterPath="$PROJECT_DIR$/pytron.py" afterDir="false" />
     </list>
@@ -33,7 +32,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Python.pytron">
     <configuration name="pytron" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pytron" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -55,9 +54,31 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="tests" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="pytron" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/Scripts" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Scripts/tests.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
         <item itemvalue="Python.pytron" />
+        <item itemvalue="Python.tests" />
       </list>
     </recent_temporary>
   </component>
@@ -87,30 +108,46 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state width="1284" height="251" key="GridCell.Tab.0.bottom" timestamp="1594338441423">
+    <state width="1284" height="251" key="GridCell.Tab.0.bottom" timestamp="1594831541143">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1284" height="251" key="GridCell.Tab.0.bottom/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594338441423" />
-    <state width="1284" height="251" key="GridCell.Tab.0.center" timestamp="1594338441423">
+    <state width="1284" height="251" key="GridCell.Tab.0.bottom/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594831541143" />
+    <state width="1284" height="251" key="GridCell.Tab.0.center" timestamp="1594831541143">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1284" height="251" key="GridCell.Tab.0.center/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594338441423" />
-    <state width="1284" height="251" key="GridCell.Tab.0.left" timestamp="1594338441423">
+    <state width="1284" height="251" key="GridCell.Tab.0.center/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594831541143" />
+    <state width="1284" height="251" key="GridCell.Tab.0.left" timestamp="1594831541143">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1284" height="251" key="GridCell.Tab.0.left/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594338441423" />
-    <state width="1284" height="251" key="GridCell.Tab.0.right" timestamp="1594338441423">
+    <state width="1284" height="251" key="GridCell.Tab.0.left/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594831541143" />
+    <state width="1284" height="251" key="GridCell.Tab.0.right" timestamp="1594831541143">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1284" height="251" key="GridCell.Tab.0.right/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594338441423" />
+    <state width="1284" height="251" key="GridCell.Tab.0.right/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594831541143" />
+    <state width="1284" height="310" key="GridCell.Tab.1.bottom" timestamp="1594829547261">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1284" height="310" key="GridCell.Tab.1.bottom/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594829547261" />
+    <state width="1284" height="310" key="GridCell.Tab.1.center" timestamp="1594829547261">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1284" height="310" key="GridCell.Tab.1.center/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594829547261" />
+    <state width="1284" height="310" key="GridCell.Tab.1.left" timestamp="1594829547261">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1284" height="310" key="GridCell.Tab.1.left/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594829547261" />
+    <state width="1284" height="310" key="GridCell.Tab.1.right" timestamp="1594829547261">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1284" height="310" key="GridCell.Tab.1.right/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594829547261" />
     <state x="665" y="146" key="SettingsEditor" timestamp="1593629756571">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="665" y="146" key="SettingsEditor/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1593629756571" />
-    <state x="860" y="328" key="com.intellij.ide.util.TipDialog" timestamp="1593629457713">
+    <state x="860" y="328" key="com.intellij.ide.util.TipDialog" timestamp="1594823983782">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="860" y="328" key="com.intellij.ide.util.TipDialog/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1593629457713" />
+    <state x="860" y="328" key="com.intellij.ide.util.TipDialog/0.0.1920.1040/-1920.0.1920.1040@0.0.1920.1040" timestamp="1594823983782" />
     <state x="827" y="233" key="search.everywhere.popup" timestamp="1594318030577">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
