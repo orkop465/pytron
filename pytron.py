@@ -2,8 +2,8 @@
 """
 
 TODO:
-    Calculate winner of round / points (points per kill or points per round win?)
-    Freeze game on one player death (and restart?)
+    sometimes trails just have no collision T: (player 3 trail, and only collide if trail is made close to player)
+    Freeze game on end (and restart?)
 
 TODO late-game:
     Multiple players / AI
@@ -15,7 +15,7 @@ import itertools
 
 class Game(object):
 
-    def __init__(self, width=800, height=600, fps=30):
+    def __init__(self, width=800, height=800, fps=30):
         pygame.init()
         pygame.display.set_caption("PyTron")
         self.width = width
@@ -27,7 +27,9 @@ class Game(object):
         self.fps = fps
         self.playtime = 0.0
         self.players = []
-        self.living_players = self.players
+        self.living_players = []
+        self.one_player = False
+        self.reset = False
 
         self.spawn_offset = 0
         self.spawn_positions = {
@@ -50,30 +52,53 @@ class Game(object):
         self.right_wall = pygame.Rect((self.width - 5, 0, 5, self.height))
         self.top_wall = pygame.Rect((0, 0, self.width, 5))
 
-    def paint(self):
-        """painting on the surface"""
+    def paint_and_check_collision(self):
+
         # PLAYERS
-        for player in self.players:
+        for player in self.living_players:
             pygame.draw.rect(self.background, player.color,
                              (player.x, player.y, player.width, player.height))  # rect: (x1, y1, width, height)
             player.rect = pygame.Rect(player.x, player.y, player.width, player.height)
+
             # CHECK FOR COLLISION WITH WALLS
             if self.left_wall.colliderect(player.rect) or self.bottom_wall.colliderect(player.rect) or \
                     self.right_wall.colliderect(player.rect) or self.top_wall.colliderect(player.rect):
                 player.dead = True
                 player.direction = ''
 
-            # CHECK FOR COLLISION WITH TRAILS
-            for p in self.players:
-                # if trail is made smaller than the player, this wont work because the rects will never be equal
-                if player.rect in p.trail:
+            # CHECK FOR COLLISIONS BETWEEN PLAYERS
+            for p in self.living_players:
+
+                # CHECK FOR HEAD-ON COLLISION
+                if p.rect.colliderect(player.rect) and p != player:
+                    p.dead = True
+                    p.direction = ''
                     player.dead = True
                     player.direction = ''
+
+                # CHECK FOR TRAIL COLLISION
+                elif player.rect in p.trail:
+                    player.dead = True
+                    player.direction = ''
+
             player.trail.append(player.rect)
 
             # DRAW TRAILS
             for t in player.trail:
                 pygame.draw.rect(self.background, player.color, t)
+
+        for player in self.living_players:
+            if player.dead:
+                self.living_players.remove(player)
+
+        if len(self.living_players) == 1:
+            self.living_players[0].points += 1
+            self.reset = True
+        elif len(self.living_players) == 0:
+            self.reset = True
+
+        if self.reset:
+            self.reset_game()
 
         # WALLS
         self.color_shifter()
@@ -107,6 +132,8 @@ class Game(object):
             raise Exception("Too many players, only four are allowed")
 
     def reset_game(self):
+        self.reset = False
+        self.living_players = self.players.copy()
         i = 1
         for player in self.players:
             player.trail.clear()
@@ -119,7 +146,8 @@ class Game(object):
         """
         The mainloop
         """
-        self.paint()
+        self.living_players = self.players.copy()
+        self.paint_and_check_collision()
         running = True
         while running:
             for event in pygame.event.get():
@@ -131,48 +159,39 @@ class Game(object):
 
             keys = pygame.key.get_pressed()
 
-            if len(self.players) == 1:
-                if not self.players[0].dead:
-                    if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.players[0].direction != 'R':
-                        self.players[0].direction = 'L'
-                    if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.players[0].direction != 'L':
-                        self.players[0].direction = 'R'
-                    if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.players[0].direction != 'D':
-                        self.players[0].direction = 'U'
-                    if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.players[0].direction != 'U':
-                        self.players[0].direction = 'D'
-                else:
-                    self.reset_game()
-            else:
-                if not self.players[0].dead and not self.players[1].dead:
-                    if keys[pygame.K_LEFT] and self.players[0].direction != 'R':
-                        self.players[0].direction = 'L'
-                    if keys[pygame.K_RIGHT] and self.players[0].direction != 'L':
-                        self.players[0].direction = 'R'
-                    if keys[pygame.K_UP] and self.players[0].direction != 'D':
-                        self.players[0].direction = 'U'
-                    if keys[pygame.K_DOWN] and self.players[0].direction != 'U':
-                        self.players[0].direction = 'D'
-                    if keys[pygame.K_a] and self.players[1].direction != 'R':
-                        self.players[1].direction = 'L'
-                    if keys[pygame.K_d] and self.players[1].direction != 'L':
-                        self.players[1].direction = 'R'
-                    if keys[pygame.K_w] and self.players[1].direction != 'D':
-                        self.players[1].direction = 'U'
-                    if keys[pygame.K_s] and self.players[1].direction != 'U':
-                        self.players[1].direction = 'D'
-                else:
-                    # enters infinitely, player 2 dying for some reason
-                    self.reset_game()
+            if self.one_player and not self.players[0].dead:
+                if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.players[0].direction != 'R':
+                    self.players[0].direction = 'L'
+                if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.players[0].direction != 'L':
+                    self.players[0].direction = 'R'
+                if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.players[0].direction != 'D':
+                    self.players[0].direction = 'U'
+                if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.players[0].direction != 'U':
+                    self.players[0].direction = 'D'
+            elif not self.players[0].dead:
+                if keys[pygame.K_LEFT] and self.players[0].direction != 'R':
+                    self.players[0].direction = 'L'
+                if keys[pygame.K_RIGHT] and self.players[0].direction != 'L':
+                    self.players[0].direction = 'R'
+                if keys[pygame.K_UP] and self.players[0].direction != 'D':
+                    self.players[0].direction = 'U'
+                if keys[pygame.K_DOWN] and self.players[0].direction != 'U':
+                    self.players[0].direction = 'D'
+            if not self.players[1].dead:
+                if keys[pygame.K_a] and self.players[1].direction != 'R':
+                    self.players[1].direction = 'L'
+                if keys[pygame.K_d] and self.players[1].direction != 'L':
+                    self.players[1].direction = 'R'
+                if keys[pygame.K_w] and self.players[1].direction != 'D':
+                    self.players[1].direction = 'U'
+                if keys[pygame.K_s] and self.players[1].direction != 'U':
+                    self.players[1].direction = 'D'
 
-            self.players[0].move()
-            try:
-                self.players[1].move()
-            except IndexError:
-                pass
+            for player in self.living_players:
+                player.move()
 
             self.background.fill((0, 0, 0))
-            self.paint()
+            self.paint_and_check_collision()
 
             milliseconds = self.clock.tick(self.fps)
             self.playtime += milliseconds / 1000.0
@@ -215,4 +234,5 @@ if __name__ == '__main__':
     Game = Game()
     p1 = Player(Game, (255, 0, 0), 5)
     p2 = Player(Game, (0, 255, 255), 5)
+    # p3 = Player(Game, (255, 0, 255), 2)
     Game.run()
