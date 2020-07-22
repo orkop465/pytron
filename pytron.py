@@ -2,7 +2,8 @@
 """
 
 TODO:
-    sometimes trails just have no collision T: (player 3 trail, and only collide if trail is made close to player)
+    pressing two directions simultaneously allows for suicide
+    collision working is based on speed!!!!!
     Freeze game on end (and restart?)
 
 TODO late-game:
@@ -69,6 +70,8 @@ class Game(object):
             # CHECK FOR COLLISIONS BETWEEN PLAYERS
             for p in self.living_players:
 
+                print(player.rect in p.trail)
+
                 # CHECK FOR HEAD-ON COLLISION
                 if p.rect.colliderect(player.rect) and p != player:
                     p.dead = True
@@ -90,6 +93,7 @@ class Game(object):
         for player in self.living_players:
             if player.dead:
                 self.living_players.remove(player)
+                player.trail.clear()
 
         if len(self.living_players) == 1:
             self.living_players[0].points += 1
@@ -168,24 +172,27 @@ class Game(object):
                     self.players[0].direction = 'U'
                 if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.players[0].direction != 'U':
                     self.players[0].direction = 'D'
-            elif not self.players[0].dead:
-                if keys[pygame.K_LEFT] and self.players[0].direction != 'R':
-                    self.players[0].direction = 'L'
-                if keys[pygame.K_RIGHT] and self.players[0].direction != 'L':
-                    self.players[0].direction = 'R'
-                if keys[pygame.K_UP] and self.players[0].direction != 'D':
-                    self.players[0].direction = 'U'
-                if keys[pygame.K_DOWN] and self.players[0].direction != 'U':
-                    self.players[0].direction = 'D'
-            if not self.players[1].dead:
-                if keys[pygame.K_a] and self.players[1].direction != 'R':
-                    self.players[1].direction = 'L'
-                if keys[pygame.K_d] and self.players[1].direction != 'L':
-                    self.players[1].direction = 'R'
-                if keys[pygame.K_w] and self.players[1].direction != 'D':
-                    self.players[1].direction = 'U'
-                if keys[pygame.K_s] and self.players[1].direction != 'U':
-                    self.players[1].direction = 'D'
+
+            elif not self.one_player:
+                if not self.players[0].dead:
+                    if keys[pygame.K_LEFT] and self.players[0].direction != 'R':
+                        self.players[0].direction = 'L'
+                    if keys[pygame.K_RIGHT] and self.players[0].direction != 'L':
+                        self.players[0].direction = 'R'
+                    if keys[pygame.K_UP] and self.players[0].direction != 'D':
+                        self.players[0].direction = 'U'
+                    if keys[pygame.K_DOWN] and self.players[0].direction != 'U':
+                        self.players[0].direction = 'D'
+
+                if not self.players[1].dead:
+                    if keys[pygame.K_a] and self.players[1].direction != 'R':
+                        self.players[1].direction = 'L'
+                    if keys[pygame.K_d] and self.players[1].direction != 'L':
+                        self.players[1].direction = 'R'
+                    if keys[pygame.K_w] and self.players[1].direction != 'D':
+                        self.players[1].direction = 'U'
+                    if keys[pygame.K_s] and self.players[1].direction != 'U':
+                        self.players[1].direction = 'D'
 
             for player in self.living_players:
                 player.move()
@@ -204,7 +211,8 @@ class Game(object):
 
 class Player:
 
-    def __init__(self, game, color, vel):
+    def __init__(self, name, game, color, vel):
+        self.name = name
         self.vel = vel
         self.x = 0
         self.y = 0
@@ -232,7 +240,8 @@ class Player:
 if __name__ == '__main__':
     # call with width of window and fps
     Game = Game()
-    p1 = Player(Game, (255, 0, 0), 5)
-    p2 = Player(Game, (0, 255, 255), 5)
-    # p3 = Player(Game, (255, 0, 255), 2)
+    p1 = Player("1", Game, (255, 0, 0), 5)
+    p2 = Player("2", Game, (0, 255, 255), 5)
+    p3 = Player("3", Game, (255, 0, 255), 5)
+    p4 = Player("4", Game, (0, 0, 255), 5)
     Game.run()
