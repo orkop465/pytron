@@ -2,12 +2,18 @@
 """
 
 TODO:
-    pressing two directions simultaneously allows for suicide
-    collision working is based on speed!!!!!
-    Freeze game on end (and restart?)
+    Change map to grid system
+    Head to head collision causes sprite loading error
+    Trail deletion animation and/or player death anim
+    Character sprites??
+    Better ending to a round (animation is played before reset now :))
+    Points display
+    Sound (music, death,)
+    Main menu w/ player options selector
 
 TODO late-game:
     Multiple players / AI
+    Collision working is based on speed
 
 """
 import pygame
@@ -36,7 +42,7 @@ class Game(object):
         self.spawn_positions = {
             1: (int(self.width / 2), self.height - (self.spawn_offset + 10), 'U'),
             2: (int(self.width / 2), self.spawn_offset + 5, 'D'),
-            3: (self.spawn_offset + 5, int(self.height / 2), 'R'),
+            3: (self.spawn_offset + 6, int(self.height / 2), 'R'),
             4: (self.width - (self.spawn_offset + 10), int(self.height / 2), 'L')
         }
 
@@ -55,10 +61,14 @@ class Game(object):
 
     def paint_and_check_collision(self):
 
+        self.background.fill((0, 0, 0))
+
         # PLAYERS
         for player in self.living_players:
-            pygame.draw.rect(self.background, player.color,
-                             (player.x, player.y, player.width, player.height))  # rect: (x1, y1, width, height)
+            # SPRITES ARE 64 X 40 PIXELS
+            self.screen.blit(player.sprite, (player.x, player.y))
+            # pygame.draw.rect(self.background, player.color,
+            #                  (player.x, player.y, player.width, player.height))  # rect: (x1, y1, width, height)
             player.rect = pygame.Rect(player.x, player.y, player.width, player.height)
 
             # CHECK FOR COLLISION WITH WALLS
@@ -66,11 +76,10 @@ class Game(object):
                     self.right_wall.colliderect(player.rect) or self.top_wall.colliderect(player.rect):
                 player.dead = True
                 player.direction = ''
+                player.final_trail_len = len(player.trail)
 
             # CHECK FOR COLLISIONS BETWEEN PLAYERS
             for p in self.living_players:
-
-                print(player.rect in p.trail)
 
                 # CHECK FOR HEAD-ON COLLISION
                 if p.rect.colliderect(player.rect) and p != player:
@@ -78,11 +87,14 @@ class Game(object):
                     p.direction = ''
                     player.dead = True
                     player.direction = ''
+                    player.final_trail_len = len(player.trail)
+                    p.final_trail_len = len(p.trail)
 
                 # CHECK FOR TRAIL COLLISION
                 elif player.rect in p.trail:
                     player.dead = True
                     player.direction = ''
+                    player.final_trail_len = len(player.trail)
 
             player.trail.append(player.rect)
 
@@ -93,15 +105,23 @@ class Game(object):
         for player in self.living_players:
             if player.dead:
                 self.living_players.remove(player)
-                player.trail.clear()
 
+        for player in self.players:
+            if player.dead:
+                try:
+                    for x in range(int(player.final_trail_len / 6)):
+                        player.trail.pop(0)
+                    for t in player.trail:
+                        pygame.draw.rect(self.background, player.color, t)
+                except IndexError:
+                    continue
+
+        dead_players = [item for item in self.players if item not in self.living_players]
         if len(self.living_players) == 1:
-            self.living_players[0].points += 1
-            self.reset = True
+            if all(len(player.trail) == 0 for player in dead_players):
+                self.reset_game()
+                self.living_players[0].points += 1
         elif len(self.living_players) == 0:
-            self.reset = True
-
-        if self.reset:
             self.reset_game()
 
         # WALLS
@@ -114,6 +134,9 @@ class Game(object):
         pygame.draw.rect(self.background, self.current_color, self.right_wall)
         # top
         pygame.draw.rect(self.background, self.current_color, self.top_wall)
+
+        pygame.display.flip()
+        self.screen.blit(self.background, (0, 0))
 
     def color_shifter(self):
         self.step += 1
@@ -132,6 +155,8 @@ class Game(object):
         try:
             self.players.append(player)
             player.x, player.y, player.direction = self.spawn_positions[len(self.players)]
+            player.sprite_path = player.sprite_path + player.direction + '.png'
+            player.sprite = pygame.image.load(player.sprite_path)
         except IndexError:
             raise Exception("Too many players, only four are allowed")
 
@@ -144,7 +169,7 @@ class Game(object):
             player.dead = False
             player.x, player.y, player.direction = self.spawn_positions[i]
             i += 1
-        self.background.fill((0, 0, 0))
+        self.paint_and_check_collision()
 
     def run(self):
         """
@@ -166,45 +191,41 @@ class Game(object):
             if self.one_player and not self.players[0].dead:
                 if (keys[pygame.K_LEFT] or keys[pygame.K_a]) and self.players[0].direction != 'R':
                     self.players[0].direction = 'L'
-                if (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.players[0].direction != 'L':
+                elif (keys[pygame.K_RIGHT] or keys[pygame.K_d]) and self.players[0].direction != 'L':
                     self.players[0].direction = 'R'
-                if (keys[pygame.K_UP] or keys[pygame.K_w]) and self.players[0].direction != 'D':
+                elif (keys[pygame.K_UP] or keys[pygame.K_w]) and self.players[0].direction != 'D':
                     self.players[0].direction = 'U'
-                if (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.players[0].direction != 'U':
+                elif (keys[pygame.K_DOWN] or keys[pygame.K_s]) and self.players[0].direction != 'U':
                     self.players[0].direction = 'D'
 
             elif not self.one_player:
                 if not self.players[0].dead:
                     if keys[pygame.K_LEFT] and self.players[0].direction != 'R':
                         self.players[0].direction = 'L'
-                    if keys[pygame.K_RIGHT] and self.players[0].direction != 'L':
+                    elif keys[pygame.K_RIGHT] and self.players[0].direction != 'L':
                         self.players[0].direction = 'R'
-                    if keys[pygame.K_UP] and self.players[0].direction != 'D':
+                    elif keys[pygame.K_UP] and self.players[0].direction != 'D':
                         self.players[0].direction = 'U'
-                    if keys[pygame.K_DOWN] and self.players[0].direction != 'U':
+                    elif keys[pygame.K_DOWN] and self.players[0].direction != 'U':
                         self.players[0].direction = 'D'
 
                 if not self.players[1].dead:
                     if keys[pygame.K_a] and self.players[1].direction != 'R':
                         self.players[1].direction = 'L'
-                    if keys[pygame.K_d] and self.players[1].direction != 'L':
+                    elif keys[pygame.K_d] and self.players[1].direction != 'L':
                         self.players[1].direction = 'R'
-                    if keys[pygame.K_w] and self.players[1].direction != 'D':
+                    elif keys[pygame.K_w] and self.players[1].direction != 'D':
                         self.players[1].direction = 'U'
-                    if keys[pygame.K_s] and self.players[1].direction != 'U':
+                    elif keys[pygame.K_s] and self.players[1].direction != 'U':
                         self.players[1].direction = 'D'
 
             for player in self.living_players:
                 player.move()
 
-            self.background.fill((0, 0, 0))
             self.paint_and_check_collision()
 
             milliseconds = self.clock.tick(self.fps)
             self.playtime += milliseconds / 1000.0
-
-            pygame.display.flip()
-            self.screen.blit(self.background, (0, 0))
 
         pygame.quit()
 
@@ -212,6 +233,7 @@ class Game(object):
 class Player:
 
     def __init__(self, name, game, color, vel):
+        self.sprite_path = "Sprites\TronBike_Blue_"
         self.name = name
         self.vel = vel
         self.x = 0
@@ -220,10 +242,12 @@ class Player:
         self.height = 5
         self.color = color
         self.direction = ''
+        self.sprite = None
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.dead = False
         self.trail = []
         self.points = 0
+        self.final_trail_len = 0
         game.add_player(self)
 
     def move(self):
@@ -236,12 +260,19 @@ class Player:
         elif self.direction == 'D':
             self.y += self.vel
 
+        self.change_sprite()
+
+    def change_sprite(self):
+        self.sprite_path = self.sprite_path[:-5]
+        self.sprite_path = self.sprite_path + self.direction + '.png'
+        self.sprite = pygame.image.load(self.sprite_path)
+
 
 if __name__ == '__main__':
     # call with width of window and fps
     Game = Game()
     p1 = Player("1", Game, (255, 0, 0), 5)
     p2 = Player("2", Game, (0, 255, 255), 5)
-    p3 = Player("3", Game, (255, 0, 255), 5)
-    p4 = Player("4", Game, (0, 0, 255), 5)
+    # p3 = Player("3", Game, (255, 0, 255), 1)
+    # p4 = Player("4", Game, (0, 0, 255), 5)
     Game.run()
