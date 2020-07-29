@@ -65,10 +65,8 @@ class Game(object):
 
         # PLAYERS
         for player in self.living_players:
-            # SPRITES ARE 64 X 40 PIXELS
-            self.screen.blit(player.sprite, (player.x, player.y))
-            # pygame.draw.rect(self.background, player.color,
-            #                  (player.x, player.y, player.width, player.height))  # rect: (x1, y1, width, height)
+            pygame.draw.rect(self.background, player.color,
+                             (player.x, player.y, player.width, player.height))  # rect: (x1, y1, width, height)
             player.rect = pygame.Rect(player.x, player.y, player.width, player.height)
 
             # CHECK FOR COLLISION WITH WALLS
@@ -106,21 +104,9 @@ class Game(object):
             if player.dead:
                 self.living_players.remove(player)
 
-        for player in self.players:
-            if player.dead:
-                try:
-                    for x in range(int(player.final_trail_len / 6)):
-                        player.trail.pop(0)
-                    for t in player.trail:
-                        pygame.draw.rect(self.background, player.color, t)
-                except IndexError:
-                    continue
-
-        dead_players = [item for item in self.players if item not in self.living_players]
         if len(self.living_players) == 1:
-            if all(len(player.trail) == 0 for player in dead_players):
-                self.reset_game()
-                self.living_players[0].points += 1
+            self.living_players[0].points += 1
+            self.reset_game()
         elif len(self.living_players) == 0:
             self.reset_game()
 
@@ -155,8 +141,6 @@ class Game(object):
         try:
             self.players.append(player)
             player.x, player.y, player.direction = self.spawn_positions[len(self.players)]
-            player.sprite_path = player.sprite_path + player.direction + '.png'
-            player.sprite = pygame.image.load(player.sprite_path)
         except IndexError:
             raise Exception("Too many players, only four are allowed")
 
@@ -233,7 +217,6 @@ class Game(object):
 class Player:
 
     def __init__(self, name, game, color, vel):
-        self.sprite_path = "Sprites\TronBike_Blue_"
         self.name = name
         self.vel = vel
         self.x = 0
@@ -242,12 +225,10 @@ class Player:
         self.height = 5
         self.color = color
         self.direction = ''
-        self.sprite = None
         self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
         self.dead = False
         self.trail = []
         self.points = 0
-        self.final_trail_len = 0
         game.add_player(self)
 
     def move(self):
@@ -259,13 +240,6 @@ class Player:
             self.y -= self.vel
         elif self.direction == 'D':
             self.y += self.vel
-
-        self.change_sprite()
-
-    def change_sprite(self):
-        self.sprite_path = self.sprite_path[:-5]
-        self.sprite_path = self.sprite_path + self.direction + '.png'
-        self.sprite = pygame.image.load(self.sprite_path)
 
 
 if __name__ == '__main__':
