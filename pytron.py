@@ -2,22 +2,12 @@
 """
 
 TODO:
-    Change map to grid system
-    Head to head collision causes sprite loading error
-    Trail deletion animation and/or player death anim
-    Character sprites??
-    Better ending to a round (animation is played before reset now :))
-    Points display
-    Sound (music, death,)
-    Main menu w/ player options selector
-
-TODO late-game:
-    Multiple players / AI
-    Collision working is based on speed
+    Reincorcement Learning
 
 """
 import pygame
 import itertools
+from numpy import *
 
 
 class Game(object):
@@ -38,10 +28,10 @@ class Game(object):
         self.one_player = False
         self.reset = False
 
-        self.spawn_offset = 0
+        self.spawn_offset = 5
         self.spawn_positions = {
-            1: (int(self.width / 2), self.height - (self.spawn_offset + 10), 'U'),
-            2: (int(self.width / 2), self.spawn_offset + 5, 'D'),
+            1: (int(self.width / 2), self.height - (self.spawn_offset + 5), 'U'),
+            2: (int(self.width / 2), self.spawn_offset, 'D'),
             3: (self.spawn_offset + 6, int(self.height / 2), 'R'),
             4: (self.width - (self.spawn_offset + 10), int(self.height / 2), 'L')
         }
@@ -59,46 +49,37 @@ class Game(object):
         self.right_wall = pygame.Rect((self.width - 5, 0, 5, self.height))
         self.top_wall = pygame.Rect((0, 0, self.width, 5))
 
+        self.map = zeros(shape=(int(self.height / 5), int(self.width / 5)))
+        self.map[0] = full((1, int(self.width / 5)), -1)
+        self.map[-1] = full((1, int(self.width / 5)), -1)
+        self.map[:, 0] = full((1, int(self.height / 5)), -1)
+        self.map[:, -1] = full((1, int(self.height / 5)), -1)
+        self.clean_map = self.map.copy()
+
     def paint_and_check_collision(self):
 
         self.background.fill((0, 0, 0))
 
         # PLAYERS
         for player in self.living_players:
-            pygame.draw.rect(self.background, player.color,
-                             (player.x, player.y, player.width, player.height))  # rect: (x1, y1, width, height)
-            player.rect = pygame.Rect(player.x, player.y, player.width, player.height)
-
+            player.rect = pygame.Rect(player.x, player.y, player.size, player.size)
             # CHECK FOR COLLISION WITH WALLS
-            if self.left_wall.colliderect(player.rect) or self.bottom_wall.colliderect(player.rect) or \
-                    self.right_wall.colliderect(player.rect) or self.top_wall.colliderect(player.rect):
+            if self.map[int(player.y / 5), int(player.x / 5)] != 0.0:
                 player.dead = True
                 player.direction = ''
-                player.final_trail_len = len(player.trail)
-
-            # CHECK FOR COLLISIONS BETWEEN PLAYERS
-            for p in self.living_players:
-
-                # CHECK FOR HEAD-ON COLLISION
-                if p.rect.colliderect(player.rect) and p != player:
-                    p.dead = True
-                    p.direction = ''
-                    player.dead = True
-                    player.direction = ''
-                    player.final_trail_len = len(player.trail)
-                    p.final_trail_len = len(p.trail)
-
-                # CHECK FOR TRAIL COLLISION
-                elif player.rect in p.trail:
-                    player.dead = True
-                    player.direction = ''
-                    player.final_trail_len = len(player.trail)
 
             player.trail.append(player.rect)
+            player.map_positions.append((int(player.y / 5), int(player.x / 5)))
+
+            if not player.dead:
+                pygame.draw.rect(self.background, player.color,
+                                 (player.x, player.y, player.size, player.size))  # rect: (x1, y1, width, height)
 
             # DRAW TRAILS
             for t in player.trail:
                 pygame.draw.rect(self.background, player.color, t)
+
+            self.map[int(player.y / 5), int(player.x / 5)] = player.player_num
 
         for player in self.living_players:
             if player.dead:
@@ -140,7 +121,9 @@ class Game(object):
     def add_player(self, player):
         try:
             self.players.append(player)
+            player.player_num = len(self.players)
             player.x, player.y, player.direction = self.spawn_positions[len(self.players)]
+            self.map[int(player.y / 5), int(player.x / 5)] = player.player_num
         except IndexError:
             raise Exception("Too many players, only four are allowed")
 
@@ -153,6 +136,7 @@ class Game(object):
             player.dead = False
             player.x, player.y, player.direction = self.spawn_positions[i]
             i += 1
+        self.map = self.clean_map.copy()
         self.paint_and_check_collision()
 
     def run(self):
@@ -216,37 +200,37 @@ class Game(object):
 
 class Player:
 
-    def __init__(self, name, game, color, vel):
-        self.name = name
+    def __init__(self, game, color, vel):
+        self.player_num = 0
         self.vel = vel
         self.x = 0
         self.y = 0
-        self.width = 5
-        self.height = 5
+        self.size = 5
         self.color = color
         self.direction = ''
-        self.rect = pygame.Rect(self.x, self.y, self.width, self.height)
+        self.rect = pygame.Rect(self.x, self.y, self.size, self.size)
         self.dead = False
         self.trail = []
+        self.map_positions = []
         self.points = 0
         game.add_player(self)
 
     def move(self):
         if self.direction == 'L':
-            self.x -= self.vel
+            self.x -= self.vel * 5
         elif self.direction == 'R':
-            self.x += self.vel
+            self.x += self.vel * 5
         elif self.direction == 'U':
-            self.y -= self.vel
+            self.y -= self.vel * 5
         elif self.direction == 'D':
-            self.y += self.vel
+            self.y += self.vel * 5
 
 
 if __name__ == '__main__':
     # call with width of window and fps
     Game = Game()
-    p1 = Player("1", Game, (255, 0, 0), 5)
-    p2 = Player("2", Game, (0, 255, 255), 5)
+    p1 = Player(Game, (255, 0, 0), 1)
+    p2 = Player(Game, (0, 255, 255), 1)
     # p3 = Player("3", Game, (255, 0, 255), 1)
     # p4 = Player("4", Game, (0, 0, 255), 5)
     Game.run()
