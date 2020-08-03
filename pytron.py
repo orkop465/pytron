@@ -63,7 +63,7 @@ class Game(object):
         # PLAYERS
         for player in self.living_players:
             player.rect = pygame.Rect(player.x, player.y, player.size, player.size)
-            # CHECK FOR COLLISION WITH WALLS
+
             if self.map[int(player.y / 5), int(player.x / 5)] != 0.0:
                 player.dead = True
                 player.direction = ''
