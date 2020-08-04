@@ -144,7 +144,6 @@ class Game(object):
         The mainloop
         """
         self.living_players = self.players.copy()
-        self.paint_and_check_collision()
         running = True
         while running:
             for event in pygame.event.get():
